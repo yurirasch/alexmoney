@@ -1,16 +1,32 @@
 {
-  "id": "./?app=alexmoney",
-  "name": "AlexMoney",
-  "short_name": "AlexMoney",
-  "start_url": "./index.html?source=pwa",
-  "scope": "./",
-  "display": "standalone",
-  "display_override": ["fullscreen","standalone"],
-  "background_color": "#071024",
-  "theme_color": "#0b1220",
-  "orientation": "portrait-primary",
-  "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
+  "manifest.webmanifest": {
+    "name": "AlexMoney",
+    "short_name": "AlexMoney",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "display_override": ["standalone", "fullscreen"],
+    "background_color": "#000814",
+    "theme_color": "#000814",
+    "description": "Sistema de Controle de Cotação — Dólar e Bitcoin em tempo real.",
+    "scope": "./",
+    "icons": [
+      {
+        "src": "icons/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icons/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  },
+  "icons": {
+    "descricao": "Crie a pasta 'icons' e adicione estes arquivos:",
+    "arquivos": [
+      "icon-192.png (versão quadrada, fundo gradiente azul-roxo, letras AM no centro)",
+      "icon-512.png (igual ao 192, mas maior para alta resolução)"
+    ]
+  }
 }
