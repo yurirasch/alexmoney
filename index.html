@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>AlexMoney</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AlexMoney">
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    :root{ --bg:#071024; --bg2:#020412; --card:#0b1220; --muted:#9aa7b2; --accent:#00d4ff; --ring:rgba(255,255,255,.06); }
+    html,body{margin:0;height:100%;background:
+      radial-gradient(900px 500px at 10% 5%, rgba(0,148,255,0.06), transparent),
+      linear-gradient(180deg,var(--bg),var(--bg2));color:#e6f0ff;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;}
+    .wrap{max-width:980px;margin:0 auto;padding:14px 12px 18px 12px}
+    header{display:flex;align-items:center;gap:12px}
+    .logo{min-width:56px;width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#7b61ff);
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#021;transform:rotate(-10deg);
+      box-shadow:0 8px 28px rgba(3,12,32,.6), inset 0 -6px 18px rgba(255,255,255,.05)}
+    h1{font-size:20px;margin:0}
+    .strap{color:#9aa7b2;font-size:12px;margin:2px 0 0 0}
+    .cards{margin-top:12px;display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:560px){ .cards{grid-template-columns:1fr 1fr;} }
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,.02));padding:14px;border-radius:14px;border:1px solid var(--ring);
+      box-shadow:0 6px 26px rgba(2,6,23,.5)}
+    .pair{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .left{display:flex;gap:10px;align-items:center}
+    .symbol{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#071e2b,#0b2540);
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+    .rate{font-size:22px;font-weight:800}
+    .delta{font-size:12px;color:var(--muted)}
+    .small{font-size:12px;color:var(--muted)}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+    .btn{flex:1;background:#0a1424;border:1px solid var(--ring);padding:10px;border-radius:12px;color:#e6f0ff;
+      font-weight:600;font-size:14px;touch-action:manipulation;cursor:pointer}
+    .btn:active{transform:scale(.99)}
+    .charts{margin-top:12px;display:grid;grid-template-columns:1fr;gap:10px}
+    .chart-wrap{padding:0;border-top:1px solid var(--ring);border-bottom:1px solid var(--ring);}
+    canvas.chart{display:block;width:100%;height:170px;background:linear-gradient(180deg,#0a1424,#0b1220)}
+    .caption{font-size:11px;color:#9aa7b2;padding:6px 6px}
+    footer{margin-top:10px;color:#9aa7b2;font-size:11px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="logo">AM</div>
+      <div>
+        <h1>AlexMoney</h1>
+        <div class="strap">Sistema de Controle de Cotação</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="small">Auto: <strong id="intervalLabel">15s</strong></div>
+        <div class="small" id="status">Conectando…</div>
+      </div>
+    </header>
+
+    <section class="cards" role="region" aria-label="cotações em tempo real">
+      <article class="card" aria-live="polite">
+        <div class="pair">
+          <div class="left">
+            <div class="symbol">USD</div>
+            <div>
+              <div class="small">Dólar → Real (USD→BRL)</div>
+              <div class="rate" id="usdBrlRate">—</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="delta" id="usdBrlDelta">—</div>
+            <div class="small" id="usdBrlUpdated">—</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" aria-live="polite">
+        <div class="pair">
+          <div class="left">
+            <div class="symbol">₿</div>
+            <div>
+              <div class="small">Bitcoin → Real (BTC→BRL)</div>
+              <div class="rate" id="btcBrlRate">—</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="delta" id="btcBrlDelta">—</div>
+            <div class="small" id="btcBrlUpdated">—</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="controls">
+      <button class="btn" id="toggleAuto">Pausar</button>
+      <button class="btn" id="manualRefresh">Atualizar</button>
+      <button class="btn" id="installBtn">Instalar</button>
+    </section>
+
+    <section class="charts">
+      <div class="chart-wrap">
+        <div class="caption">USD → BRL — últimos 30 dias</div>
+        <canvas id="usdChart" class="chart"></canvas>
+      </div>
+      <div class="chart-wrap">
+        <div class="caption">Bitcoin → BRL — últimos 30 dias</div>
+        <canvas id="btcChart" class="chart"></canvas>
+      </div>
+    </section>
+
+    <footer>
+      <div>Fontes: AwesomeAPI (USD) · Binance (BTC)</div>
+      <div>Última tentativa: <span id="lastTry">—</span></div>
+    </footer>
+  </main>
+
+  <script>
+    // ===== Service Worker (arquivo estático sw.js) =====
+    if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js'); }
+
+    // ===== APIs
+    const API = {
+      usd_latest: 'https://economia.awesomeapi.com.br/last/USD-BRL',
+      usd_hist_30: 'https://economia.awesomeapi.com.br/json/daily/USD-BRL/30',
+      btc_latest_brl: 'https://api.binance.com/api/v3/ticker/price?symbol=BTCBRL',
+      btc_hist_brl_klines: 'https://api.binance.com/api/v3/klines?symbol=BTCBRL&interval=1d&limit=30'
+    };
+    const $ = s=>document.querySelector(s);
+    const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+
+    // UI Refs
+    const statusEl=$('#status'), lastTryEl=$('#lastTry'), intervalLabel=$('#intervalLabel');
+    const usdRateEl=$('#usdBrlRate'), usdDeltaEl=$('#usdBrlDelta'), usdUpdEl=$('#usdBrlUpdated');
+    const btcRateEl=$('#btcBrlRate'), btcDeltaEl=$('#btcBrlDelta'), btcUpdEl=$('#btcBrlUpdated');
+    const usdCanvas=$('#usdChart'), btcCanvas=$('#btcChart');
+
+    let auto=true, secs=15, timer=null;
+    intervalLabel.textContent = secs+'s';
+    const last={ usd_brl:null, btc_brl:null };
+
+    // ===== Gráficos (Canvas simples) =====
+    function drawSeries(canvas, points){
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth || 320;
+      const h = canvas.clientHeight || 170;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+
+      const pad = {l:38, r:10, t:10, b:18};
+      if(!points || !points.length){ ctx.fillStyle='#9aa7b2'; ctx.font='12px system-ui,sans-serif'; ctx.fillText('sem dados', 10, 20); return; }
+      const ys = points.map(p=>p.y), xs = points.map(p=>p.x);
+      let yMin = Math.min(...ys), yMax = Math.max(...ys);
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      const range = (yMax - yMin) || (yMax*0.01 || 1);
+      yMin -= range*0.08; yMax += range*0.08;
+      const X = x => pad.l + ((x - xMin) / (xMax - xMin || 1)) * (w - pad.l - pad.r);
+      const Y = y => pad.t + (1 - ((y - yMin) / (yMax - yMin || 1))) * (h - pad.t - pad.b);
+
+      // grid
+      const lines = 4;
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1; ctx.beginPath();
+      for(let i=0;i<=lines;i++){ const yy = pad.t + (i/lines)*(h - pad.t - pad.b); ctx.moveTo(pad.l,yy); ctx.lineTo(w - pad.r, yy); }
+      ctx.stroke();
+
+      // y labels
+      ctx.fillStyle = '#9aa7b2'; ctx.font = '11px system-ui,sans-serif';
+      const vals = [yMin, (yMin+yMax)/2, yMax];
+      vals.forEach(v=>{ ctx.fillText(fmtBRL(v), 6, Y(v)+4); });
+
+      // line
+      ctx.beginPath(); ctx.lineWidth=2; ctx.strokeStyle='#00d4ff';
+      points.forEach((p,i)=>{ const xx=X(p.x), yy=Y(p.y); if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); });
+      ctx.stroke();
+    }
+
+    async function loadUSDHistory(){
+      const arr = await fetch(API.usd_hist_30).then(r=>r.json());
+      return (arr||[]).map(o=>({ x:Number(o.timestamp)*1000, y:Number(o.bid) })).sort((a,b)=>a.x-b.x);
+    }
+    async function loadBTCHistory(){
+      const arr = await fetch(API.btc_hist_brl_klines).then(r=>r.json());
+      return (arr||[]).map(k=>({ x:Number(k[0]), y:Number(k[4]) }));
+    }
+
+    async function setupCharts(){
+      try{
+        const [usdSeries, btcSeries] = await Promise.all([loadUSDHistory(), loadBTCHistory()]);
+        drawSeries(usdCanvas, usdSeries);
+        drawSeries(btcCanvas, btcSeries);
+        const ro = new ResizeObserver(()=>{ drawSeries(usdCanvas, usdSeries); drawSeries(btcCanvas, btcSeries); });
+        ro.observe(usdCanvas); ro.observe(btcCanvas);
+      }catch(e){ console.error('Histórico falhou', e); }
+    }
+
+    // ===== Cotações em tempo real =====
+    function show(kind, value, rateEl, deltaEl, updEl){
+      rateEl.textContent = fmtBRL(value);
+      const prev=last[kind];
+      if(prev!=null){
+        const diff=value-prev, pct=(diff/prev)*100;
+        deltaEl.textContent=`${diff>0?'+':''}${diff.toFixed(2)} (${pct.toFixed(2)}%)`;
+        deltaEl.style.color=diff>0?'var(--ok)':(diff<0?'var(--bad)':'#9aa7b2)');
+      }else{ deltaEl.textContent='—'; deltaEl.style.color='#9aa7b2'; }
+      last[kind]=value; updEl.textContent=new Date().toLocaleTimeString();
+    }
+    async function refreshLive(){
+      statusEl.textContent='Atualizando…';
+      lastTryEl.textContent=new Date().toLocaleString();
+      try{
+        const [usdJson, btcJson] = await Promise.all([
+          fetch(API.usd_latest).then(r=>r.json()),
+          fetch(API.btc_latest_brl).then(r=>r.json())
+        ]);
+        const usd_brl = Number((usdJson.USDBRL||{}).bid);
+        const btc_brl = Number(btcJson.price);
+        if(!isFinite(usd_brl)) throw new Error('USD inválido');
+        if(!isFinite(btc_brl)) throw new Error('BTC inválido');
+        show('usd_brl', usd_brl, usdRateEl, usdDeltaEl, usdUpdEl);
+        show('btc_brl', btc_brl, btcRateEl, btcDeltaEl, btcUpdEl);
+        statusEl.textContent='Atualizado ✅';
+      }catch(e){ console.error(e); statusEl.textContent='Erro na atualização'; }
+    }
+    function startLoop(){ if(timer) clearInterval(timer); timer = setInterval(()=>{ if(auto) refreshLive(); }, secs*1000); }
+
+    // ===== Instalação (WebAPK): respeita gesto do usuário =====
+    let deferredPrompt=null;
+    const btnInstall = document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault();
+      deferredPrompt = e;
+      btnInstall.style.display='inline-block';
+    });
+    btnInstall.addEventListener('click', async ()=>{
+      if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; }
+    });
+    window.addEventListener('appinstalled', ()=>{ btnInstall.style.display='none'; });
+
+    // Boot
+    (async ()=>{ await setupCharts(); await refreshLive(); startLoop(); })();
+  </script>
+</body>
+</html>
