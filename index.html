@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AlexMoney - Your Personal Finance Manager">
+    <meta name="theme-color" content="#4CAF50">
+    <title>AlexMoney</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 AlexMoney</h1>
+            <p class="subtitle">Your Personal Finance Manager</p>
+        </header>
+
+        <!-- PWA Install Button -->
+        <div id="installPrompt" class="install-prompt hidden">
+            <p>Install AlexMoney for quick access!</p>
+            <button id="installButton" class="install-btn">Install App</button>
+            <button id="dismissButton" class="dismiss-btn">Not Now</button>
+        </div>
+
+        <main>
+            <section class="welcome">
+                <h2>Welcome to AlexMoney</h2>
+                <p>Manage your personal finances with ease. Track expenses, set budgets, and achieve your financial goals.</p>
+            </section>
+
+            <section class="features">
+                <h3>Features</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h4>Track Expenses</h4>
+                        <p>Keep track of all your expenses in one place</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💵</div>
+                        <h4>Budget Planning</h4>
+                        <p>Set and manage your monthly budgets</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h4>Financial Reports</h4>
+                        <p>Visualize your spending patterns</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h4>Goals</h4>
+                        <p>Set and track your financial goals</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="pwa-status">
+                <h3>App Status</h3>
+                <div id="statusInfo">
+                    <p>📱 <strong>PWA Ready:</strong> <span id="pwaStatus">Checking...</span></p>
+                    <p>📶 <strong>Network:</strong> <span id="networkStatus">Checking...</span></p>
+                    <p>💾 <strong>Service Worker:</strong> <span id="swStatus">Checking...</span></p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 AlexMoney. A Progressive Web App.</p>
+        </footer>
+    </div>
+
+    <!-- PWA Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
